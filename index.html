@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pemesanan Tiket Concert PADI Reborn - Universitas Negeri Malang</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            50: '#f0f4f8',
+                            100: '#dbe3f0',
+                            200: '#bdcbe2',
+                            800: '#1b365d', // UM Navy
+                            900: '#0f2547',
+                            950: '#0a1830',
+                        },
+                        gold: {
+                            100: '#fef3c7',
+                            400: '#fbbf24',
+                            500: '#f59e0b', // Gold Accents
+                            650: '#d97706',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1aa;
+        }
+        
+        /* Print styles for E-Ticket */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #modal-detail, #modal-detail * {
+                visibility: visible;
+            }
+            #modal-detail {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                background: white;
+                transform: none;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+                border: none;
+            }
+            #modal-detail-content {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+            .print-hidden, #modal-detail .border-t, #modal-detail button {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans selection:bg-gold-100 selection:text-slate-900">
+
+    <header class="border-b border-slate-200 bg-white/95 backdrop-blur sticky top-0 z-40 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-gold-500 to-amber-600 p-2.5 rounded-xl shadow-lg shadow-gold-600/20">
+                    <i class="fa-solid fa-guitar text-slate-950 text-xl animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-widest text-slate-900 uppercase">PADI REBORN</h1>
+                    <p class="text-xs text-slate-500 font-semibold">Graha Cakrawala - Universitas Negeri Malang</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <div class="flex items-center space-x-2">
+                <div class="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200" id="nav-tabs-container">
+                    <button id="tab-form-btn" onclick="switchTab('form')" class="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 bg-gradient-to-r from-gold-500 to-amber-500 text-slate-950 shadow-md">
+                        <i class="fa-solid fa-ticket mr-2"></i>Formulir
+                    </button>
+                    <!-- Rekap Penjualan button hidden by default from general public -->
+                    <button id="tab-rekap-btn" onclick="switchTab('rekap')" class="hidden px-4 py-2 text-xs sm:text-sm font-bold rounded-lg text-slate-500 hover:text-slate-900 transition-all duration-200">
+                        <i class="fa-solid fa-table-list mr-2"></i>Rekap Penjualan
+                    </button>
+                </div>
+                <!-- Admin Lock Toggle Button -->
+                <button id="admin-lock-btn" onclick="toggleAdminAccess()" class="bg-white hover:bg-slate-50 border border-slate-200 hover:border-gold-500 text-slate-600 hover:text-gold-600 p-2.5 rounded-xl transition-all duration-200 shadow-sm" title="Akses Admin">
+                    <i id="admin-lock-icon" class="fa-solid fa-lock text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- FORM SECTION -->
+        <section id="section-form" class="transition-all duration-300 space-y-8">
+            <!-- Deadline Countdown Banner -->
+            <div id="deadline-banner" class="bg-gradient-to-r from-red-50 via-amber-50/40 to-red-50 border border-red-200 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+                <div class="flex items-center space-x-3 text-center md:text-left">
+                    <div class="bg-red-100 text-red-600 p-2.5 rounded-xl border border-red-200">
+                        <i class="fa-solid fa-hourglass-half text-lg animate-spin" style="animation-duration: 3s;"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-slate-900 text-sm sm:text-base tracking-wide uppercase">BATAS AKHIR PEMESANAN TIKET WARGA UM</h4>
+                        <p class="text-xs text-slate-600 mt-0.5">Pendataan ditutup pada <strong class="text-amber-600 font-bold">Senin, 29 Juni 2026 pukul 23.59 WIB</strong></p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200" id="countdown-timer">
+                    <span class="text-xs font-semibold text-slate-500">Sisa Waktu:</span>
+                    <span class="text-sm font-mono font-black text-red-600 tracking-wider" id="timer-display">Memuat sisa waktu...</span>
+                </div>
+            </div>
+
+            <!-- Hero Concert Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-navy-900 border border-slate-800 shadow-xl">
+                <!-- Content Section -->
+                <div class="relative p-6 sm:p-10 flex flex-col justify-center overflow-hidden z-10">
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-gold-600/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+                    
+                    <div class="relative flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                        <div class="space-y-4 max-w-2xl">
+                            <span class="bg-gold-500/10 border border-gold-500/30 text-gold-400 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider inline-block">
+                                Pendaftaran & Pendataan Mandiri Warga UM
+                            </span>
+                            <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md">
+                                FORMULIR PEMESANAN TIKET <br class="hidden sm:inline">KONSER PADI REBORN
+                            </h2>
+                            <div class="flex flex-wrap gap-y-2 gap-x-6 text-sm text-slate-300">
+                                <span class="flex items-center"><i class="fa-solid fa-calendar text-gold-500 mr-2 text-base"></i> 10 Juli 2026</span>
+                                <span class="flex items-center"><i class="fa-solid fa-location-dot text-gold-500 mr-2 text-base"></i> Graha Cakrawala UM, Malang</span>
+                                <span class="flex items-center"><i class="fa-solid fa-ticket text-gold-500 mr-2 text-base"></i> Pengambilan Offline di Loket</span>
+                            </div>
+                        </div>
+                        <div class="bg-navy-950/80 backdrop-blur-sm border border-navy-800/60 p-5 rounded-2xl text-center min-w-[200px] xl:w-auto w-fit">
+                            <p class="text-xs text-slate-400 font-semibold mb-1">Contact Person</p>
+                            <a href="https://wa.me/6281216899800" target="_blank" class="text-gold-400 font-bold hover:underline text-sm tracking-wide">
+                                <i class="fa-brands fa-whatsapp mr-1 text-green-500 text-base"></i> +62 812-1689-9800
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <form id="booking-form" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left Column (Inputs) -->
+                <div class="lg:col-span-8 space-y-8">
+                    
+                    <!-- A. DATA PEMESAN -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                            <span class="flex items-center justify-center bg-navy-50 text-navy-800 border border-navy-100 w-8 h-8 rounded-full font-bold text-sm">A</span>
+                            <h3 class="text-lg font-bold text-slate-900 tracking-tight">DATA PEMESAN</h3>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Nama Lengkap -->
+                            <div class="space-y-2">
+                                <label for="nama" class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Nama Lengkap <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                    <input type="text" id="nama" name="nama" required placeholder="Nama lengkap sesuai kartu identitas" 
+                                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none text-slate-900 placeholder:text-slate-400 transition-all">
+                                </div>
+                            </div>
+
+                            <!-- NIP / NITK / NIM -->
+                            <div class="space-y-2">
+                                <label for="id_number" class="block text-xs font-bold text-slate-600 uppercase tracking-wider">NIP / NITK / NIM <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <i class="fa-solid fa-id-card"></i>
+                                    </div>
+                                    <input type="text" id="id_number" name="id_number" required placeholder="Masukkan NIP/NITK/NIM Anda" 
+                                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none text-slate-900 placeholder:text-slate-400 transition-all">
+                                </div>
+                            </div>
+
+                            <!-- Unit Kerja / Fakultas -->
+                            <div class="space-y-2">
+                                <label for="unit_kerja" class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Unit Kerja / Fakultas <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <i class="fa-solid fa-building-columns"></i>
+                                    </div>
+                                    <input type="text" id="unit_kerja" name="unit_kerja" required placeholder="Fakultas, Jurusan, atau Unit Kerja" 
+                                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none text-slate-900 placeholder:text-slate-400 transition-all">
+                                </div>
+                            </div>
+
+                            <!-- WhatsApp -->
+                            <div class="space-y-2">
+                                <label for="whatsapp" class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Nomor WhatsApp <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                                    </div>
+                                    <input type="tel" id="whatsapp" name="whatsapp" required placeholder="Contoh: 0812XXXXXXXX" 
+                                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none text-slate-900 placeholder:text-slate-400 transition-all">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- B. PEMESANAN TIKET -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                            <span class="flex items-center justify-center bg-navy-50 text-navy-800 border border-navy-100 w-8 h-8 rounded-full font-bold text-sm">B</span>
+                            <div class="flex-grow flex justify-between items-center">
+                                <h3 class="text-lg font-bold text-slate-900 tracking-tight">PEMESANAN TIKET</h3>
+                                <span class="text-xs text-slate-500 italic">Pilih kuantitas tiket</span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Table List (Full width structure) -->
+                        <div class="space-y-4">
+                            <!-- VIP Standing Ticket Row -->
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-50 border border-slate-200/60 rounded-xl gap-4 hover:border-gold-500/30 transition-all">
+                                <div class="flex items-start space-x-3">
+                                    <div class="bg-amber-100 text-amber-700 p-2.5 rounded-lg border border-amber-200">
+                                        <i class="fa-solid fa-crown text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                                            <h4 class="font-bold text-slate-900 text-base">VIP Standing</h4>
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-0.5">Area festival (berdiri) di depan panggung utama (Merah)</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-6">
+                                    <div class="text-left sm:text-right font-sans">
+                                        <span class="text-xs text-slate-500 block font-semibold">Harga</span>
+                                        <span class="text-amber-650 font-extrabold text-base">Rp 350.000</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <button type="button" id="btn-minus-vip" onclick="adjustQty('vip', -1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:border-gold-500 text-slate-600 transition-all shadow-sm">-</button>
+                                        <input type="number" id="qty-vip" name="qty_vip" min="0" max="10" value="0" readonly class="w-12 text-center font-bold bg-transparent text-slate-900 outline-none">
+                                        <button type="button" id="btn-plus-vip" onclick="adjustQty('vip', 1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:border-gold-500 text-slate-600 transition-all shadow-sm">+</button>
+                                    </div>
+                                    <div class="text-right w-24 hidden sm:block">
+                                        <span class="text-xs text-slate-500 block font-semibold">Subtotal</span>
+                                        <span id="subtotal-vip" class="font-bold text-slate-900">Rp 0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tribun A Ticket Row -->
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-50 border border-slate-200/60 rounded-xl gap-4 hover:border-gold-500/30 transition-all">
+                                <div class="flex items-start space-x-3">
+                                    <div class="bg-indigo-50 text-indigo-700 p-2.5 rounded-lg border border-indigo-200">
+                                        <i class="fa-solid fa-chair text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                                            <h4 class="font-bold text-slate-900 text-base">Tribun A (Tribun bawah)</h4>
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-0.5">Tribun bertingkat lingkaran dalam, dekat FOH (Biru)</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-6">
+                                    <div class="text-left sm:text-right font-sans">
+                                        <span class="text-xs text-slate-500 block font-semibold">Harga</span>
+                                        <span class="text-amber-650 font-extrabold text-base">Rp 230.000</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <button type="button" id="btn-minus-tribun_a" onclick="adjustQty('tribun_a', -1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:border-gold-500 text-slate-600 transition-all shadow-sm">-</button>
+                                        <input type="number" id="qty-tribun_a" name="qty_tribun_a" min="0" max="10" value="0" readonly class="w-12 text-center font-bold bg-transparent text-slate-900 outline-none">
+                                        <button type="button" id="btn-plus-tribun_a" onclick="adjustQty('tribun_a', 1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:border-gold-500 text-slate-600 transition-all shadow-sm">+</button>
+                                    </div>
+                                    <div class="text-right w-24 hidden sm:block">
+                                        <span class="text-xs text-slate-500 block font-semibold">Subtotal</span>
+                                        <span id="subtotal-tribun_a" class="font-bold text-slate-900">Rp 0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tribun B Ticket Row -->
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-50 border border-slate-200/60 rounded-xl gap-4 hover:border-gold-500/30 transition-all">
+                                <div class="flex items-start space-x-3">
+                                    <div class="bg-emerald-50 text-emerald-700 p-2.5 rounded-lg border border-emerald-200">
+                                        <i class="fa-solid fa-chair text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                                            <h4 class="font-bold text-slate-900 text-base">Tribun B (Tribun Atas)</h4>
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-0.5">Tribun bertingkat lingkaran luar, di belakang Tribun A (Ungu)</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-6">
+                                    <div class="text-left sm:text-right font-sans">
+                                        <span class="text-xs text-slate-500 block font-semibold">Harga</span>
+                                        <span class="text-amber-650 font-extrabold text-base">Rp 200.000</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <button type="button" id="btn-minus-tribun_b" onclick="adjustQty('tribun_b', -1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:border-gold-500 text-slate-600 transition-all shadow-sm">-</button>
+                                        <input type="number" id="qty-tribun_b" name="qty_tribun_b" min="0" max="10" value="0" readonly class="w-12 text-center font-bold bg-transparent text-slate-900 outline-none">
+                                        <button type="button" id="btn-plus-tribun_b" onclick="adjustQty('tribun_b', 1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:border-gold-500 text-slate-600 transition-all shadow-sm">+</button>
+                                    </div>
+                                    <div class="text-right w-24 hidden sm:block">
+                                        <span class="text-xs text-slate-500 block font-semibold">Subtotal</span>
+                                        <span id="subtotal-tribun_b" class="font-bold text-slate-900">Rp 0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- C. PEMBAYARAN -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                            <span class="flex items-center justify-center bg-navy-50 text-navy-800 border border-navy-100 w-8 h-8 rounded-full font-bold text-sm">C</span>
+                            <h3 class="text-lg font-bold text-slate-900 tracking-tight">PEMBAYARAN</h3>
+                        </div>
+
+                        <!-- Bank Rekening Info -->
+                        <div class="p-5 bg-gradient-to-r from-slate-50 to-slate-100/55 border border-slate-200 rounded-xl space-y-4">
+                            <div class="flex items-start justify-between">
+                                <div class="space-y-1">
+                                    <span class="text-xs font-bold text-navy-800 tracking-wider uppercase">REKENING PEMBAYARAN BRI</span>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-wider" id="rekening-number">122901014988500</span>
+                                        <button type="button" onclick="copyToClipboard('122901014988500')" class="text-slate-450 hover:text-gold-650 transition-all" title="Salin Rekening">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
+                                    </div>
+                                    <p class="text-sm font-semibold text-slate-700">a.n. Imam Ala Uddin</p>
+                                </div>
+                                <span class="bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold px-2 py-1 rounded">
+                                    BANK BRI
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-550 leading-relaxed">
+                                <i class="fa-solid fa-circle-info text-amber-500 mr-1.5"></i> Mohon pastikan nominal yang dikirim sesuai dengan total pembayaran Anda. Simpan struk / tangkapan layar untuk diunggah sebagai bukti bayar.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Nama Pengirim -->
+                            <div class="space-y-2">
+                                <label for="sender_name" class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Nama Pengirim <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                                    </div>
+                                    <input type="text" id="sender_name" name="sender_name" required placeholder="Nama pengirim sesuai rekening pengirim" 
+                                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none text-slate-900 placeholder:text-slate-400 transition-all">
+                                </div>
+                            </div>
+
+                            <!-- Tanggal Pembayaran -->
+                            <div class="space-y-2">
+                                <label for="payment_date" class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Tanggal Pembayaran <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <i class="fa-solid fa-calendar-day"></i>
+                                    </div>
+                                    <input type="date" id="payment_date" name="payment_date" required 
+                                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none text-slate-900 transition-all">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- D. UNGGAH BUKTI PEMBAYARAN -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                            <span class="flex items-center justify-center bg-navy-50 text-navy-800 border border-navy-100 w-8 h-8 rounded-full font-bold text-sm">D</span>
+                            <h3 class="text-lg font-bold text-slate-900 tracking-tight">UNGGAH / LAMPIRKAN BUKTI PEMBAYARAN</h3>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="border-2 border-dashed border-slate-200 hover:border-gold-500/40 rounded-xl p-6 text-center bg-slate-50 transition-all relative">
+                                <input type="file" id="proof_file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="previewProofImage(event)">
+                                <div class="space-y-3 pointer-events-none" id="upload-placeholder">
+                                    <div class="w-12 h-12 bg-gold-500/10 text-gold-600 rounded-full flex items-center justify-center mx-auto border border-gold-500/20">
+                                        <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-900">Klik atau Tarik berkas di sini</p>
+                                        <p class="text-xs text-slate-500 mt-1">Format: JPG, JPEG, PNG (Maks 3MB)</p>
+                                    </div>
+                                </div>
+                                <div class="hidden space-y-3" id="upload-preview-container">
+                                    <img id="upload-preview" class="max-h-48 mx-auto rounded-lg border border-slate-200 shadow-md">
+                                    <div class="flex items-center justify-center space-x-2 text-xs text-green-600 font-bold">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                        <span id="proof-filename">File terlampir</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <label class="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-slate-200 select-none">
+                                <input type="checkbox" id="proof_attached" name="proof_attached" required class="w-4 h-4 rounded text-gold-500 focus:ring-gold-500 focus:ring-offset-white focus:ring-2 accent-gold-500">
+                                <span class="text-xs sm:text-sm text-slate-600 font-medium">Bukti pembayaran telah dilampirkan dengan benar.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- E. PERNYATAAN -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                            <span class="flex items-center justify-center bg-navy-50 text-navy-800 border border-navy-100 w-8 h-8 rounded-full font-bold text-sm">E</span>
+                            <h3 class="text-lg font-bold text-slate-900 tracking-tight">PERNYATAAN</h3>
+                        </div>
+
+                        <div class="space-y-6">
+                            <!-- Statement checkbox -->
+                            <label class="flex items-start space-x-3 p-4 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-slate-200 select-none">
+                                <input type="checkbox" id="statement_agreed" name="statement_agreed" required class="w-4 h-4 rounded text-gold-500 focus:ring-gold-500 focus:ring-offset-white focus:ring-2 mt-0.5 accent-gold-500">
+                                <span class="text-xs sm:text-sm text-slate-600 leading-relaxed font-semibold">
+                                    Saya menyatakan bahwa data yang saya isi benar dan bersedia mematuhi seluruh ketentuan yang berlaku pada acara Konser PADI Reborn di Graha Cakrawala Universitas Negeri Malang.
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (Sticky Ticket Summary) -->
+                <div class="lg:col-span-4">
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 sticky top-28 space-y-6 shadow-md">
+                        <h3 class="text-md font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-3">Ringkasan Pemesanan</h3>
+                        
+                        <!-- Order itemization details -->
+                        <div class="space-y-3" id="summary-empty">
+                            <div class="text-center py-10 text-slate-400">
+                                <i class="fa-solid fa-ticket-simple text-3xl mb-3 text-slate-300 block"></i>
+                                <p class="text-sm">Belum ada tiket dipilih</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 hidden" id="summary-items-list">
+                            <div class="flex justify-between text-xs text-slate-400 font-bold border-b border-slate-100 pb-2">
+                                <span>Jenis Tiket</span>
+                                <span>Qty</span>
+                                <span class="text-right">Subtotal</span>
+                            </div>
+                            <div id="summary-rows" class="space-y-2 text-sm text-slate-800">
+                                <!-- Dynamic rows -->
+                            </div>
+                        </div>
+
+                        <!-- TOTAL PEMBAYARAN -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                            <span class="text-[10px] font-bold text-slate-500 tracking-wider uppercase">TOTAL PEMBAYARAN</span>
+                            <div class="text-2xl font-black text-amber-650 text-gold-600 font-sans" id="total-payment-amount">
+                                Rp 0
+                            </div>
+                        </div>
+
+                        <!-- Ticket pickup info banner -->
+                        <div class="p-3.5 bg-amber-500/5 border border-amber-200 text-xs text-slate-650 leading-relaxed rounded-xl">
+                            <i class="fa-solid fa-circle-exclamation text-amber-600 mr-2 text-sm float-left"></i>
+                            <strong>Penting:</strong> Penukaran gelang tiket fisik wajib dilakukan secara <strong>offline di loket Graha Cakrawala</strong> dengan menunjukkan <strong>E-Tiket atau Kwitansi yang sudah dicetak</strong> serta <strong>Kartu Pegawai</strong> atau <strong>Kartu Mahasiswa</strong>.
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" id="btn-submit" class="w-full bg-gradient-to-r from-gold-500 via-amber-500 to-amber-600 text-slate-950 font-black py-4 px-6 rounded-xl hover:shadow-lg hover:shadow-gold-500/20 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 text-sm sm:text-base">
+                            <span>PESAN & KUMPULKAN SEKARANG</span>
+                            <i class="fa-solid fa-circle-right text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- SUCCESS / TERIMA KASIH SECTION -->
+        <section id="section-success" class="hidden transition-all duration-500 py-10">
+            <div class="bg-white border border-slate-200 rounded-3xl p-8 md:p-16 text-center shadow-lg max-w-3xl mx-auto space-y-6">
+                <div class="w-24 h-24 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 border-[6px] border-green-50">
+                    <i class="fa-solid fa-check text-5xl"></i>
+                </div>
+                
+                <div class="space-y-2">
+                    <span class="text-gold-600 font-bold tracking-widest text-xs uppercase">Berhasil Diverifikasi</span>
+                    <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Terima Kasih!</h2>
+                </div>
+                
+                <p class="text-slate-600 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
+                    Data pemesanan tiket <strong>Konser PADI Reborn</strong> Anda telah berhasil dicatat ke dalam sistem pendataan kami.
+                </p>
+
+                <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl inline-block max-w-lg text-xs md:text-sm text-amber-800 text-left mx-auto">
+                    <p><i class="fa-solid fa-circle-info text-amber-500 mr-2"></i><strong>Penting:</strong> E-Tiket Sementara / Kwitansi Anda telah terbit. Bukti ini <strong>wajib dicetak</strong> dan ditunjukkan bersama <strong>Kartu Pegawai</strong> atau <strong>Kartu Mahasiswa</strong> asli kepada petugas loket saat penukaran gelang fisik tiket di Graha Cakrawala.</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8 pt-4">
+                    <button type="button" onclick="showLastReceipt()" class="px-6 py-3.5 bg-gradient-to-r from-gold-500 to-amber-500 text-slate-950 font-bold rounded-xl shadow-lg shadow-gold-500/20 hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+                        <i class="fa-solid fa-receipt mr-2"></i> Lihat E-Tiket Sementara
+                    </button>
+                    <button type="button" onclick="resetToForm()" class="px-6 py-3.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center">
+                        <i class="fa-solid fa-rotate-left mr-2"></i> Pesan Tiket Lainnya
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- REKAP PENJUALAN SECTION -->
+        <section id="section-rekap" class="hidden transition-all duration-300 space-y-6">
+            <!-- Header panel -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+                <div class="space-y-1">
+                    <span class="bg-navy-50 text-navy-800 border border-navy-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                        LEMBAR REKAP PENJUALAN
+                    </span>
+                    <h2 class="text-2xl font-black text-slate-900">REKAPITULASI DATA PENGISI FORMULIR</h2>
+                    <p class="text-xs text-slate-500">Mensimulasikan data Google Spreadsheet secara real-time. Anda juga bisa menyinkronkan dengan Google Sheets asli Anda.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+                    <!-- Sync from Sheets Button -->
+                    <button onclick="loadOrdersData()" class="bg-white border border-slate-200 hover:border-blue-500 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-arrows-rotate text-blue-500"></i>
+                        <span>Sinkronkan Data</span>
+                    </button>
+                    <!-- Config Sheet Webhook button -->
+                    <button onclick="toggleWebhookModal()" class="bg-white border border-slate-200 hover:border-blue-500 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-2">
+                        <i class="fa-brands fa-google text-blue-500"></i>
+                        <span>Integrasi Google Sheets</span>
+                    </button>
+                    <!-- Export to CSV -->
+                    <button onclick="exportToCSV()" class="bg-white border border-slate-200 hover:border-gold-500 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-file-csv text-green-600"></i>
+                        <span>Ekspor CSV (Sheets)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats/Metrics Panel -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-1 shadow-sm">
+                    <span class="text-xs text-slate-500 font-semibold block">Total Pemesan</span>
+                    <span class="text-xl font-black text-slate-900" id="stat-total-orders">0</span>
+                </div>
+                <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-1 shadow-sm">
+                    <span class="text-xs text-slate-500 font-semibold block">Total Tiket VIP</span>
+                    <span class="text-xl font-black text-amber-600" id="stat-total-vip">0</span>
+                </div>
+                <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-1 shadow-sm">
+                    <span class="text-xs text-slate-500 font-semibold block">Total Tiket Tribun A (Tribun bawah)</span>
+                    <span class="text-xl font-black text-indigo-600" id="stat-total-tribun_a">0</span>
+                </div>
+                <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-1 shadow-sm">
+                    <span class="text-xs text-slate-500 font-semibold block">Total Tiket Tribun B (Tribun Atas)</span>
+                    <span class="text-xl font-black text-emerald-600" id="stat-total-tribun_b">0</span>
+                </div>
+            </div>
+
+            <!-- Spreadsheet Simulation Table -->
+            <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <!-- Search and Filter bar -->
+                <div class="p-4 border-b border-slate-200 bg-white flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="relative w-full sm:w-72">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </div>
+                        <input type="text" id="rekap-search" oninput="filterRekapTable()" placeholder="Cari Nama / WA / NIP..." 
+                            class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-gold-500 focus:ring-0 text-xs text-slate-900 placeholder:text-slate-400 transition-all">
+                    </div>
+                    <div class="text-[11px] text-slate-500 font-semibold">
+                        Menampilkan <span id="rekap-count" class="text-gold-600 font-bold">0</span> data pemesanan
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-550 uppercase tracking-wider text-[10px] font-bold">
+                                <th class="py-4 px-4 text-center">No</th>
+                                <th class="py-4 px-4 text-center">Waktu Submit</th>
+                                <th class="py-4 px-4">Nama</th>
+                                <th class="py-4 px-4">NIP/NITK/NIM</th>
+                                <th class="py-4 px-4">WA</th>
+                                <th class="py-4 px-4">Jenis Tiket</th>
+                                <th class="py-4 px-4 text-right">Jumlah</th>
+                                <th class="py-4 px-4 text-right">Total Bayar</th>
+                                <th class="py-4 px-4 text-center">Bukti</th>
+                                <th class="py-4 px-4 text-center">Status Pembayaran</th>
+                                <th class="py-4 px-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rekap-table-body" class="divide-y divide-slate-100 text-slate-700">
+                            <tr id="table-loading-row">
+                                <td colspan="11" class="py-12 text-center text-slate-400">
+                                    <i class="fa-solid fa-spinner animate-spin text-2xl text-gold-500 mb-2"></i>
+                                    <p>Memuat rekap data dari database cloud...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL: Detail Pemesanan / Tiket PDF Mockup -->
+    <div id="modal-detail" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 animate-fade-in">
+        <div class="bg-white border border-slate-200 max-w-lg w-full rounded-2xl overflow-hidden shadow-2xl relative">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50 print-hidden">
+                <h3 class="font-extrabold text-slate-900 text-base">E-TIKET SEMENTARA / KWITANSI</h3>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-900 transition-all">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6 overflow-y-auto max-h-[70vh]" id="modal-detail-content">
+                <!-- Content injected dynamically -->
+            </div>
+            
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-3 print-hidden">
+                <button onclick="closeDetailModal()" class="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-all">Tutup</button>
+                <button onclick="window.print()" class="px-4 py-2 bg-gradient-to-r from-gold-500 to-amber-500 text-slate-950 text-xs font-bold rounded-lg hover:shadow-lg hover:shadow-gold-500/15 transition-all">
+                    <i class="fa-solid fa-print mr-1"></i> Cetak E-Tiket
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Login Admin Authenticator -->
+    <div id="modal-admin-login" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 animate-fade-in">
+        <div class="bg-white border border-slate-200 max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl relative">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-shield-halved text-gold-650 text-lg animate-pulse"></i>
+                    <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider">Verifikasi Hak Akses</h3>
+                </div>
+                <button onclick="closeAdminLoginModal()" class="text-slate-400 hover:text-slate-900 transition-all">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <form onsubmit="handleAdminLogin(event)" class="p-6 space-y-4">
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Halaman rekapitulasi data pendaftar hanya ditujukan untuk Admin pengelola. Silakan masukkan kata sandi Anda.
+                </p>
+                
+                <div class="space-y-2">
+                    <label for="admin-password" class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Kata Sandi Akses</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                        <input type="password" id="admin-password" required placeholder="Kata Sandi" 
+                            class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none text-slate-900 placeholder:text-slate-400 transition-all text-sm">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex space-x-3">
+                    <button type="button" onclick="closeAdminLoginModal()" class="w-1/2 py-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 text-xs font-bold rounded-xl transition-all">Batal</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-gradient-to-r from-gold-500 to-amber-500 text-slate-950 text-xs font-bold rounded-xl hover:shadow-lg hover:shadow-gold-500/15 transition-all">Masuk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Google Sheets Webhook Configuration -->
+    <div id="modal-webhook" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-slate-200 max-w-md w-full rounded-2xl overflow-hidden shadow-2xl relative">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h3 class="font-extrabold text-slate-900 text-base">Hubungkan ke Google Sheets Anda</h3>
+                <button onclick="toggleWebhookModal()" class="text-slate-400 hover:text-slate-900 transition-all">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Setiap pemesanan baru akan dikirim secara otomatis dan dapat disinkronkan ke seluruh perangkat menggunakan fitur Webhook Google Apps Script.
+                </p>
+
+                <!-- Step Guide -->
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
+                    <span class="text-amber-700 font-bold uppercase block text-[10px]">Cara Integrasi Singkat:</span>
+                    <ol class="list-decimal pl-4 space-y-1 text-slate-500 font-medium">
+                        <li>Buka Google Spreadsheet baru milik Anda.</li>
+                        <li>Klik <strong>Ekstensi > Apps Script</strong>, tempelkan kode webhook kami.</li>
+                        <li>Terapkan/Deploy sebagai Aplikasi Web (akses: Siapa saja/Anyone).</li>
+                        <li>Salin URL Webhook dari situ dan tempelkan di bawah ini.</li>
+                    </ol>
+                </div>
+
+                <!-- Webhook Input -->
+                <div class="space-y-2">
+                    <label for="webhook-url-input" class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">URL Webhook Google Apps Script</label>
+                    <input type="url" id="webhook-url-input" placeholder="https://script.google.com/macros/s/.../exec" 
+                        class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-gold-500 focus:ring-0 text-xs text-slate-900 placeholder:text-slate-400 transition-all">
+                </div>
+
+                <!-- App script code block -->
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-bold text-slate-550 uppercase tracking-wider">Kode Google Apps Script (Klik untuk Menyalin)</label>
+                    <textarea readonly onclick="copyAppsScriptCode()" id="app-script-code" class="w-full h-24 p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] text-slate-500 font-mono focus:outline-none cursor-pointer hover:border-slate-300">function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    sheet.appendRow([
+      new Date(),
+      data.nama,
+      data.id_number,
+      data.unit_kerja,
+      data.whatsapp,
+      data.tickets_ordered,
+      data.total_payment,
+      data.sender_name,
+      data.payment_date,
+      data.timestamp,
+      data.proof_image,
+      JSON.stringify(data.tickets)
+    ]);
+    return ContentService.createTextOutput(JSON.stringify({"result":"success"})).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({"result":"error", "message": err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}</textarea>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-3">
+                <button onclick="toggleWebhookModal()" class="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-all">Tutup</button>
+                <button onclick="saveWebhookSettings()" class="px-4 py-2 bg-gradient-to-r from-gold-500 to-amber-500 text-slate-950 text-xs font-bold rounded-lg transition-all">Simpan Konfigurasi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Konfirmasi Hapus Data -->
+    <div id="modal-delete" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 animate-fade-in">
+        <div class="bg-white border border-slate-200 max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl relative">
+            <div class="p-6 text-center space-y-4">
+                <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto border-[4px] border-red-50">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+                </div>
+                <h3 class="font-extrabold text-slate-900 text-lg">Hapus Data Pemesanan?</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                    Data yang dihapus tidak dapat dikembalikan dari sistem internal. Jika data sudah terkirim ke Google Sheets, Anda juga harus menghapus barisnya secara manual di Google Sheets.
+                </p>
+            </div>
+            
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex space-x-3">
+                <button type="button" onclick="closeDeleteConfirm()" class="w-1/2 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 text-sm font-bold rounded-xl transition-all">Batal</button>
+                <button type="button" id="btn-confirm-delete" onclick="confirmDeleteOrder()" class="w-1/2 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-md shadow-red-600/20 transition-all flex items-center justify-center">
+                    Hapus Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFIKASI TOAST NOTIFICATION CONTAINER -->
+    <div id="notification-box" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full"></div>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-400">
+        <p>&copy; 2026 Konser PADI Reborn - Universitas Negeri Malang. All Rights Reserved.</p>
+        <p class="mt-1 text-slate-500 font-medium">Dikembangkan untuk Pendataan Mandiri. Pengambilan tiket dilakukan offline.</p>
+    </footer>
+
+    <!-- Firebase Javascript Integration Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, onSnapshot, addDoc, doc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global declarations
+        let app = null;
+        let db = null;
+        let auth = null;
+        let authUser = null;
+        let ordersData = [];
+        let isAdminLoggedIn = false; // State to track admin session
+        let lastOrderPayload = null; // Store last order for the success page
+        
+        let deleteTargetId = null;
+        const firebaseConfig = {
+            projectId: "demo-project",
+            storageBucket: "demo.appspot.com",
+            messagingSenderId: "12345678",
+            appId: "1:1234:web:abcd"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase safely with robust catch block
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            console.log("Firebase initialized successfully.");
+        } catch (e) {
+            console.warn("Firebase failed to load. Operating in fully functional local-storage mode.", e);
+        }
+
+        // Hanya gunakan Firebase jika konfigurasi BUKAN dummy project (mencegah loading/hang saat addDoc)
+        const isFirebaseActive = () => !!(db && auth && firebaseConfig.projectId !== "demo-project");
+
+        // Safe Authenticate function
+        async function authenticate() {
+            if (!isFirebaseActive()) return null;
+            try {
+                if (initialAuthToken) {
+                    const credentials = await signInWithCustomToken(auth, initialAuthToken);
+                    authUser = credentials.user;
+                } else {
+                    const credentials = await signInAnonymously(auth);
+                    authUser = credentials.user;
+                }
+                console.log("Authenticated successfully.");
+                return authUser;
+            } catch (e) {
+                console.error("Authentication failed. Continuing in local-only sandbox state: ", e);
+                return null;
+            }
+        }
+
+        // Countdown Clock Functionality
+        function startCountdown() {
+            const deadlineTime = new Date("June 29, 2026 23:59:00 GMT+0700").getTime();
+            const timerDisplay = document.getElementById('timer-display');
+            const submitBtn = document.getElementById('btn-submit');
+            const banner = document.getElementById('deadline-banner');
+
+            const countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const timeLeft = deadlineTime - now;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    timerDisplay.innerHTML = "PEMESANAN TELAH DITUTUP";
+                    timerDisplay.className = "text-sm font-extrabold text-red-500 animate-pulse";
+                    
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = `<span>PEMESANAN DITUTUP (MELEWATI BATAS WAKTU)</span> <i class="fa-solid fa-lock text-lg"></i>`;
+                    submitBtn.className = "w-full bg-slate-200 text-slate-400 border border-slate-300 font-bold py-4 px-6 rounded-xl cursor-not-allowed transition-all flex items-center justify-center space-x-2 text-sm sm:text-base";
+                    
+                    banner.className = "bg-gradient-to-r from-red-50 to-slate-100 border border-red-300 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm";
+                    return;
+                }
+
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                timerDisplay.innerHTML = `${days}d : ${hours}j : ${minutes}m : ${seconds}d`;
+            }, 1000);
+        }
+
+        const prices = {
+            vip: 350000,
+            tribun_a: 230000,
+            tribun_b: 200000
+        };
+
+        const quantities = {
+            vip: 0,
+            tribun_a: 0,
+            tribun_b: 0
+        };
+
+        window.adjustQty = function(ticketType, change) {
+            const currentQty = quantities[ticketType];
+            const maxAllowed = 10;
+
+            const newQty = Math.max(0, Math.min(maxAllowed, currentQty + change));
+            
+            if (change > 0 && currentQty >= maxAllowed) {
+                showToast(`Maksimal pemesanan adalah ${maxAllowed} tiket untuk setiap transaksi.`, "error");
+                return;
+            }
+
+            quantities[ticketType] = newQty;
+            const qtyInput = document.getElementById(`qty-${ticketType}`);
+            if (qtyInput) qtyInput.value = newQty;
+            
+            calculateTotals();
+        };
+
+        function calculateTotals() {
+            let total = 0;
+            const summaryRows = [];
+            const summaryList = document.getElementById('summary-items-list');
+            const summaryEmpty = document.getElementById('summary-empty');
+            const summaryRowsContainer = document.getElementById('summary-rows');
+
+            Object.keys(prices).forEach(type => {
+                const subtotal = quantities[type] * prices[type];
+                total += subtotal;
+
+                const subtotalEl = document.getElementById(`subtotal-${type}`);
+                if (subtotalEl) {
+                    subtotalEl.innerText = formatIDR(subtotal);
+                }
+
+                if (quantities[type] > 0) {
+                    const label = type === 'vip' ? 'VIP Standing' : type === 'tribun_a' ? 'Tribun A (Tribun bawah)' : 'Tribun B (Tribun Atas)';
+                    summaryRows.push(`
+                        <div class="flex justify-between items-center py-1">
+                            <span class="font-semibold text-slate-700">${label}</span>
+                            <span class="text-gold-650 font-bold">${quantities[type]}x</span>
+                            <span class="text-right text-slate-900 font-bold">${formatIDR(subtotal)}</span>
+                        </div>
+                    `);
+                }
+            });
+
+            if (summaryRows.length > 0) {
+                if (summaryEmpty) summaryEmpty.classList.add('hidden');
+                if (summaryList) summaryList.classList.remove('hidden');
+                if (summaryRowsContainer) summaryRowsContainer.innerHTML = summaryRows.join('');
+            } else {
+                if (summaryEmpty) summaryEmpty.classList.remove('hidden');
+                if (summaryList) summaryList.classList.add('hidden');
+            }
+
+            const totalPayAmount = document.getElementById('total-payment-amount');
+            if (totalPayAmount) totalPayAmount.innerText = formatIDR(total);
+        }
+
+        function formatIDR(value) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        let base64ProofImage = "";
+
+        window.previewProofImage = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 3 * 1024 * 1024) {
+                showToast("Ukuran file bukti bayar maksimal 3MB!", "error");
+                event.target.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Resize image to max 600px width/height before upload to save Google Sheets cell space
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const max_size = 600;
+
+                    if (width > height) {
+                        if (width > max_size) {
+                            height *= max_size / width;
+                            width = max_size;
+                        }
+                    } else {
+                        if (height > max_size) {
+                            width *= max_size / height;
+                            height = max_size;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to lightweight JPEG quality 0.7
+                    base64ProofImage = canvas.toDataURL('image/jpeg', 0.7);
+
+                    document.getElementById('upload-preview').src = base64ProofImage;
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                    document.getElementById('upload-preview-container').classList.remove('hidden');
+                    document.getElementById('proof-filename').innerText = file.name;
+                    showToast("Bukti pembayaran berhasil diunggah & dioptimalkan.", "success");
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.showProofModalOnly = function(imageSrc) {
+            const modal = document.createElement('div');
+            modal.id = 'proof-viewer-modal';
+            modal.className = 'fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 cursor-pointer';
+            modal.onclick = function() { modal.remove(); };
+            modal.innerHTML = `
+                <div class="max-w-3xl max-h-[90vh] bg-white p-2 rounded-2xl shadow-2xl relative cursor-default" onclick="event.stopPropagation()">
+                    <button onclick="document.getElementById('proof-viewer-modal').remove()" class="absolute -top-3 -right-3 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-red-700 transition-all font-bold">✕</button>
+                    <img src="${imageSrc}" class="max-w-full max-h-[80vh] object-contain rounded-xl">
+                </div>
+            `;
+            document.body.appendChild(modal);
+        };
+
+        window.copyToClipboard = function(text) {
+            const input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast("Nomor rekening berhasil disalin!", "success");
+        };
+
+        window.showToast = function(message, type = "success") {
+            const container = document.getElementById('notification-box');
+            if (!container) return;
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-white border-green-200' : 'bg-white border-red-200';
+            const iconColor = type === 'success' ? 'text-green-500' : 'text-red-500';
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation';
+
+            toast.className = `${bgColor} border p-4 rounded-xl flex items-start space-x-3 shadow-xl transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} ${iconColor} text-lg mt-0.5"></i>
+                <div class="flex-grow">
+                    <p class="text-xs font-bold text-slate-900">${message}</p>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        };
+
+        let webhookUrl = localStorage.getItem('google_sheets_webhook_url') || "";
+
+        window.toggleWebhookModal = function() {
+            const modal = document.getElementById('modal-webhook');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('webhook-url-input').value = webhookUrl;
+            }
+        };
+
+        window.saveWebhookSettings = async function() {
+            const url = document.getElementById('webhook-url-input').value.trim();
+            if (url && !url.startsWith('https://script.google.com/')) {
+                showToast("URL Webhook tidak valid! Harus berawalan Google Apps Script URL.", "error");
+                return;
+            }
+            webhookUrl = url;
+            localStorage.setItem('google_sheets_webhook_url', url);
+            showToast("Konfigurasi Google Sheets berhasil disimpan!", "success");
+            toggleWebhookModal();
+            // Muat ulang data terbaru secara silang dari Google Sheets
+            await loadOrdersData();
+        };
+
+        window.copyAppsScriptCode = function() {
+            const codeEl = document.getElementById('app-script-code');
+            codeEl.select();
+            document.execCommand('copy');
+            showToast("Kode disalin! Tempel di Google Apps Script Anda.", "success");
+        };
+
+        async function fetchOrdersFromGoogleSheets() {
+            if (!webhookUrl) return false;
+            try {
+                // Fetch GET untuk menarik data rekap dari Google Sheets Web App
+                const response = await fetch(webhookUrl);
+                if (!response.ok) throw new Error("HTTP Error");
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    ordersData = data;
+                    ordersData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    updateRekapStats();
+                    updateRekapTable();
+                    return true;
+                }
+            } catch (err) {
+                console.warn("Gagal menarik data dari Webhook Google Sheets: ", err);
+            }
+            return false;
+        }
+
+        /* FORM SUBMISSION LOGIC */
+        window.handleFormSubmit = async function(event) {
+            event.preventDefault();
+
+            const totalTickets = quantities.vip + quantities.tribun_a + quantities.tribun_b;
+            if (totalTickets === 0) {
+                showToast("Silakan pilih minimal 1 tiket untuk melanjutkan pemesanan!", "error");
+                return;
+            }
+
+            const proofAttached = document.getElementById('proof_attached').checked;
+            const statementAgreed = document.getElementById('statement_agreed').checked;
+            if (!proofAttached || !statementAgreed) {
+                showToast("Harap menyetujui pernyataan dan melampirkan bukti!", "error");
+                return;
+            }
+
+            const submitBtn = document.getElementById('btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> Mengirim data...`;
+
+            const totalPayment = (quantities.vip * prices.vip) + (quantities.tribun_a * prices.tribun_a) + (quantities.tribun_b * prices.tribun_b);
+            
+            const ticketsFormatted = [];
+            if (quantities.vip > 0) ticketsFormatted.push(`VIP Standing (${quantities.vip}x)`);
+            if (quantities.tribun_a > 0) ticketsFormatted.push(`Tribun A (Tribun bawah) (${quantities.tribun_a}x)`);
+            if (quantities.tribun_b > 0) ticketsFormatted.push(`Tribun B (Tribun Atas) (${quantities.tribun_b}x)`);
+
+            const orderPayload = {
+                id: isFirebaseActive() ? undefined : "local-" + crypto.randomUUID(),
+                nama: document.getElementById('nama').value,
+                id_number: document.getElementById('id_number').value,
+                unit_kerja: document.getElementById('unit_kerja').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                tickets: { ...quantities },
+                tickets_ordered: ticketsFormatted.join(", "),
+                total_payment: totalPayment,
+                sender_name: document.getElementById('sender_name').value,
+                payment_date: document.getElementById('payment_date').value,
+                proof_attached: proofAttached,
+                statement_agreed: statementAgreed,
+                proof_image: base64ProofImage || "Placeholder_no_file",
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                // Simpan ke Google Sheets via Webhook (POST) jika telah dikonfigurasi
+                let webhookPosted = false;
+                if (webhookUrl) {
+                    try {
+                        const postResponse = await fetch(webhookUrl, {
+                            method: "POST",
+                            mode: "no-cors",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(orderPayload)
+                        });
+                        webhookPosted = true;
+                    } catch (err) {
+                        console.error("Gagal mengirim data ke Webhook: ", err);
+                    }
+                }
+
+                // Sebagai fallback, tetap simpan di lokal agar ada salinan cadangan
+                if (isFirebaseActive()) {
+                    if (!auth.currentUser) await authenticate();
+                    const appIdStr = "PADI_REBORN_APP_2026";
+                    const docRef = collection(db, 'artifacts', appIdStr, 'public', 'data', 'orders');
+                    await addDoc(docRef, orderPayload);
+                } else {
+                    const localOrders = JSON.parse(localStorage.getItem('padi_local_orders') || '[]');
+                    localOrders.push(orderPayload);
+                    localStorage.setItem('padi_local_orders', JSON.stringify(localOrders));
+                }
+
+                showToast("Pemesanan tiket berhasil didaftarkan!", "success");
+                
+                lastOrderPayload = orderPayload;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                switchTab('success');
+                
+                // Reset form state
+                document.getElementById('booking-form').reset();
+                quantities.vip = 0;
+                quantities.tribun_a = 0;
+                quantities.tribun_b = 0;
+                calculateTotals();
+                document.getElementById('upload-placeholder').classList.remove('hidden');
+                document.getElementById('upload-preview-container').classList.add('hidden');
+                base64ProofImage = "";
+
+                // Tarik ulang data segar dari Google Sheets
+                if (webhookUrl) {
+                    await fetchOrdersFromGoogleSheets();
+                } else {
+                    loadLocalOrdersFallback();
+                }
+
+            } catch (error) {
+                console.error("Save Error: ", error);
+                showToast("Gagal menyimpan data. Silakan coba kembali.", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<span>PESAN & KUMPULKAN SEKARANG</span> <i class="fa-solid fa-circle-right text-lg"></i>`;
+            }
+        };
+
+        let unsubscribeOrders = null;
+
+        function startListeningToOrders() {
+            if (isFirebaseActive()) {
+                if (unsubscribeOrders) unsubscribeOrders();
+                const appIdStr = "PADI_REBORN_APP_2026";
+                const ordersCollection = collection(db, 'artifacts', appIdStr, 'public', 'data', 'orders');
+                const q = query(ordersCollection);
+
+                unsubscribeOrders = onSnapshot(q, (snapshot) => {
+                    ordersData = [];
+                    snapshot.forEach((doc) => {
+                        ordersData.push({ id: doc.id, ...doc.data() });
+                    });
+                    ordersData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    updateRekapStats();
+                    updateRekapTable();
+                }, (error) => {
+                    loadLocalOrdersFallback();
+                });
+            } else {
+                // Tarik data Google Sheets secara global
+                loadOrdersData();
+            }
+        }
+
+        window.loadOrdersData = async function() {
+            const tableBody = document.getElementById('rekap-table-body');
+            tableBody.innerHTML = `
+                <tr id="table-loading-row">
+                    <td colspan="11" class="py-12 text-center text-slate-400">
+                        <i class="fa-solid fa-spinner animate-spin text-2xl text-gold-500 mb-2"></i>
+                        <p>Menyelaraskan data multi-perangkat via Google Sheets...</p>
+                    </td>
+                </tr>
+            `;
+
+            let hasSynced = false;
+            if (webhookUrl) {
+                hasSynced = await fetchOrdersFromGoogleSheets();
+            }
+            
+            if (!hasSynced) {
+                loadLocalOrdersFallback();
+            }
+        };
+
+        function loadLocalOrdersFallback() {
+            const localOrders = JSON.parse(localStorage.getItem('padi_local_orders') || '[]');
+            ordersData = localOrders;
+            ordersData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            updateRekapStats();
+            updateRekapTable();
+        }
+
+        function updateRekapTable() {
+            const tableBody = document.getElementById('rekap-table-body');
+            const searchVal = document.getElementById('rekap-search').value.toLowerCase().trim();
+            
+            const filteredOrders = ordersData.filter(order => {
+                return (
+                    order.nama?.toLowerCase().includes(searchVal) ||
+                    order.id_number?.toLowerCase().includes(searchVal) ||
+                    order.whatsapp?.toLowerCase().includes(searchVal)
+                );
+            });
+
+            document.getElementById('rekap-count').innerText = filteredOrders.length;
+
+            if (filteredOrders.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="11" class="py-12 text-center text-slate-400">
+                            <i class="fa-solid fa-folder-open text-2xl mb-2 text-slate-300 block"></i>
+                            Tidak ada data pemesanan ditemukan.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let rowsHtml = "";
+            filteredOrders.forEach((order, index) => {
+                const totalFormatted = formatIDR(order.total_payment || 0);
+
+                rowsHtml += `
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                        <td class="py-4 px-4 text-center text-slate-400 font-bold">${index + 1}</td>
+                        <td class="py-4 px-4 text-[10px] text-slate-500 whitespace-nowrap text-center">${formatTimestamp(order.timestamp)}</td>
+                        <td class="py-4 px-4 font-bold text-slate-900">${order.nama}</td>
+                        <td class="py-4 px-4 text-slate-500 font-mono">${order.id_number}</td>
+                        <td class="py-4 px-4 font-semibold text-gold-650">
+                            <a href="https://wa.me/${formatWaLink(order.whatsapp)}" target="_blank" class="hover:underline">
+                                <i class="fa-brands fa-whatsapp text-green-600 mr-1.5"></i>${order.whatsapp}
+                            </a>
+                        </td>
+                        <td class="py-4 px-4 text-slate-600 text-xs">${order.tickets_ordered || "-"}</td>
+                        <td class="py-4 px-4 text-right font-bold text-slate-600">${getTotalTicketsCount(order.tickets)}</td>
+                        <td class="py-4 px-4 text-right font-black text-gold-650">${totalFormatted}</td>
+                        <td class="py-4 px-4 text-center">
+                            ${order.proof_image && order.proof_image !== "Placeholder_no_file" ? `
+                                <img src="${order.proof_image}" class="w-10 h-10 object-cover rounded-lg border border-slate-200 cursor-pointer shadow-sm hover:scale-110 transition-all inline-block" onclick="showProofModalOnly('${order.proof_image}')" title="Klik untuk memperbesar">
+                            ` : `
+                                <span class="text-slate-400 text-xs italic">Tanpa berkas</span>
+                            `}
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-50 text-green-700 border border-green-200">
+                                Berhasil Diverifikasi
+                            </span>
+                        </td>
+                        <td class="py-4 px-4 text-center space-x-1 flex justify-center items-center">
+                            <button id="view-btn-${index}" class="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-2.5 py-1 rounded text-[10px] font-bold transition-all" title="Lihat Detail">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <button id="del-btn-${index}" class="bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 px-2.5 py-1 rounded text-[10px] font-bold transition-all" title="Hapus Data">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = rowsHtml;
+
+            // Attach secure click listeners
+            filteredOrders.forEach((order, index) => {
+                const viewBtn = document.getElementById(`view-btn-${index}`);
+                if (viewBtn) {
+                    viewBtn.addEventListener('click', () => {
+                        viewOrderDetails(order);
+                    });
+                }
+                const delBtn = document.getElementById(`del-btn-${index}`);
+                if (delBtn) {
+                    delBtn.addEventListener('click', () => {
+                        openDeleteConfirm(order.id || order.timestamp);
+                    });
+                }
+            });
+        }
+
+        function getTotalTicketsCount(tickets) {
+            if (!tickets) return 0;
+            return (tickets.vip || 0) + (tickets.tribun_a || 0) + (tickets.tribun_b || 0);
+        }
+
+        function formatWaLink(phone) {
+            let clean = phone.replace(/[^0-9]/g, '');
+            if (clean.startsWith('0')) {
+                clean = '62' + clean.slice(1);
+            }
+            return clean;
+        }
+
+        function formatDate(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
+        function formatTimestamp(isoString) {
+            if (!isoString) return "-";
+            const date = new Date(isoString);
+            const options = { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('id-ID', options).replace(/\./g, ':');
+        }
+
+        function updateRekapStats() {
+            let totalOrders = ordersData.length;
+            let vipTotal = 0;
+            let tribunATotal = 0;
+            let tribunBTotal = 0;
+
+            ordersData.forEach(order => {
+                if (order.tickets) {
+                    vipTotal += (order.tickets.vip || 0);
+                    tribunATotal += (order.tickets.tribun_a || 0);
+                    tribunBTotal += (order.tickets.tribun_b || 0);
+                }
+            });
+
+            document.getElementById('stat-total-orders').innerText = totalOrders;
+            document.getElementById('stat-total-vip').innerText = vipTotal;
+            document.getElementById('stat-total-tribun_a').innerText = tribunATotal;
+            document.getElementById('stat-total-tribun_b').innerText = tribunBTotal;
+        }
+
+        window.filterRekapTable = function() {
+            updateRekapTable();
+        };
+
+        window.exportToCSV = function() {
+            if (ordersData.length === 0) {
+                showToast("Tidak ada data rekap untuk diekspor!", "error");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "No,Nama Pemesan,NIP/NITK/NIM,Unit Kerja,WhatsApp,Detail Tiket,Total Pembayaran,Nama Pengirim BRI,Tanggal Bayar,Timestamp\n";
+
+            ordersData.forEach((order, index) => {
+                const row = [
+                    index + 1,
+                    `"${order.nama || ''}"`,
+                    `"${order.id_number || ''}"`,
+                    `"${order.unit_kerja || ''}"`,
+                    `"${order.whatsapp || ''}"`,
+                    `"${order.tickets_ordered || ''}"`,
+                    order.total_payment || 0,
+                    `"${order.sender_name || ''}"`,
+                    `"${order.payment_date || ''}"`,
+                    `"${order.timestamp || ''}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekap_Tiket_Padi_Reborn_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Rekap CSV berhasil diunduh!", "success");
+        };
+
+        window.viewOrderDetails = function(order) {
+            showReceiptModal(order);
+        };
+
+        function showReceiptModal(order) {
+            const modalContent = document.getElementById('modal-detail-content');
+            const bookingCode = "PDI-" + (order.timestamp ? new Date(order.timestamp).getTime().toString().slice(-6) : Math.floor(Math.random()*900000+100000));
+            
+            modalContent.innerHTML = `
+                <div class="space-y-5 text-xs sm:text-sm text-slate-800" id="printable-ticket">
+                    <!-- Ticket Header -->
+                    <div class="flex items-center justify-between border-b-2 border-dashed border-slate-300 pb-4">
+                        <div>
+                            <h4 class="font-black text-slate-900 text-lg uppercase tracking-wider">E-TIKET SEMENTARA</h4>
+                            <p class="text-[10px] text-slate-500 font-bold tracking-widest mt-0.5">KWITANSI PEMBAYARAN SAH</p>
+                        </div>
+                        <div class="text-right">
+                            <i class="fa-solid fa-qrcode text-3xl text-slate-800"></i>
+                            <p class="text-[8px] font-mono font-bold mt-1 text-slate-500">${bookingCode}</p>
+                        </div>
+                    </div>
+
+                    <!-- Concert branding -->
+                    <div class="bg-gradient-to-br from-navy-900 via-navy-800 to-slate-900 p-5 rounded-xl text-center text-white space-y-1.5 shadow-md relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 w-16 h-16 bg-gold-500/20 rounded-full blur-xl"></div>
+                        <div class="absolute -left-4 -bottom-4 w-16 h-16 bg-gold-500/20 rounded-full blur-xl"></div>
+                        <span class="text-[10px] font-black tracking-widest text-gold-400 relative z-10">KONSER EKSKLUSIF</span>
+                        <h4 class="font-black text-white text-2xl tracking-widest drop-shadow-md relative z-10">PADI REBORN</h4>
+                        <p class="text-[10px] text-slate-300 relative z-10">10 Juli 2026 | Graha Cakrawala - Univ. Negeri Malang</p>
+                    </div>
+
+                    <!-- Personal info -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <div class="grid grid-cols-2 gap-y-4 gap-x-4">
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-bold block uppercase tracking-wider mb-1">Nama Pemesan</span>
+                                <span class="font-extrabold text-slate-900 text-sm">${order.nama}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-bold block uppercase tracking-wider mb-1">NIP/NITK/NIM</span>
+                                <span class="font-mono text-slate-700 font-semibold text-xs">${order.id_number}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-bold block uppercase tracking-wider mb-1">No. WhatsApp</span>
+                                <span class="font-medium text-slate-900 text-xs">${order.whatsapp}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-bold block uppercase tracking-wider mb-1">Kode Booking</span>
+                                <span class="font-mono font-black text-gold-650 text-sm">${bookingCode}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ordered itemization -->
+                    <div class="space-y-2">
+                        <span class="text-[10px] text-slate-500 font-bold block uppercase tracking-wider mb-1">Detail Tiket Dipesan</span>
+                        <div class="bg-amber-50/50 border border-amber-200/60 p-3.5 rounded-xl font-bold text-slate-800 text-xs font-sans leading-relaxed shadow-sm">
+                            ${order.tickets_ordered}
+                        </div>
+                    </div>
+
+                    <!-- Payment details -->
+                    <div class="grid grid-cols-2 gap-4 border-2 border-slate-100 p-4 rounded-xl">
+                        <div>
+                            <span class="text-[10px] text-slate-500 font-bold block">PENGIRIM (BRI)</span>
+                            <span class="font-bold text-slate-800 text-xs">${order.sender_name}</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-500 font-bold block">TANGGAL BAYAR</span>
+                            <span class="font-bold text-slate-800 text-xs">${formatDate(order.payment_date)}</span>
+                        </div>
+                        <div class="col-span-2 border-t-2 border-dashed border-slate-200 pt-3 mt-1 flex justify-between items-center">
+                            <span class="text-[11px] text-slate-600 font-black tracking-wider uppercase">Status Lunas</span>
+                            <span class="font-black text-green-600 text-lg">${formatIDR(order.total_payment)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Visibilitas Bukti Pembayaran -->
+                    ${order.proof_image && order.proof_image !== "Placeholder_no_file" ? `
+                    <div class="space-y-2 print-hidden">
+                        <span class="text-[10px] text-slate-500 font-bold block uppercase tracking-wider">Bukti Transfer Yang Diunggah:</span>
+                        <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 p-2 text-center">
+                            <img src="${order.proof_image}" alt="Bukti Pembayaran" class="max-h-64 object-contain mx-auto rounded-lg shadow-sm cursor-pointer hover:opacity-95" onclick="showProofModalOnly('${order.proof_image}')" title="Klik untuk memperbesar">
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Warning/Instructions -->
+                    <div class="bg-red-50 p-3 rounded-xl border border-red-200 flex items-start space-x-3">
+                        <i class="fa-solid fa-triangle-exclamation text-red-500 mt-0.5 text-lg"></i>
+                        <div>
+                            <span class="text-[10px] text-red-700 font-black block uppercase tracking-wider">PENTING - WAJIB DIBACA</span>
+                            <p class="text-[10px] text-red-600 mt-1 leading-relaxed font-medium">Ini adalah <strong>E-Tiket Sementara / Kwitansi Pembayaran</strong>. Dokumen ini <u>WAJIB DICETAK</u> dan ditunjukkan bersama dengan <strong>Kartu Pegawai</strong> atau <strong>Kartu Mahasiswa</strong> asli kepada petugas loket di Graha Cakrawala saat melakukan penukaran Gelang Tiket Fisik.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modal-detail').classList.remove('hidden');
+        }
+
+        window.closeDetailModal = function() {
+            document.getElementById('modal-detail').classList.add('hidden');
+        };
+
+        window.showLastReceipt = function() {
+            if (lastOrderPayload) {
+                showReceiptModal(lastOrderPayload);
+            } else {
+                showToast("Data tiket terakhir tidak ditemukan.", "error");
+            }
+        };
+
+        window.resetToForm = function() {
+            switchTab('form');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.toggleAdminAccess = function() {
+            if (isAdminLoggedIn) {
+                isAdminLoggedIn = false;
+                document.getElementById('tab-rekap-btn').classList.add('hidden');
+                document.getElementById('admin-lock-icon').className = "fa-solid fa-lock text-sm text-gold-600";
+                document.getElementById('admin-lock-btn').title = "Login Admin";
+                switchTab('form');
+                showToast("Sesi akses rekap berhasil ditutup.", "success");
+            } else {
+                openAdminLoginModal();
+            }
+        };
+
+        window.openAdminLoginModal = function() {
+            document.getElementById('modal-admin-login').classList.remove('hidden');
+            document.getElementById('admin-password').value = "";
+            document.getElementById('admin-password').focus();
+        };
+
+        window.closeAdminLoginModal = function() {
+            document.getElementById('modal-admin-login').classList.add('hidden');
+        };
+
+        window.handleAdminLogin = function(event) {
+            event.preventDefault();
+            const password = document.getElementById('admin-password').value;
+            
+            if (password === 'admin2026') {
+                isAdminLoggedIn = true;
+                document.getElementById('tab-rekap-btn').classList.remove('hidden');
+                document.getElementById('admin-lock-icon').className = "fa-solid fa-lock-open text-sm text-green-650";
+                document.getElementById('admin-lock-btn').title = "Keluar Sesi Admin";
+                
+                closeAdminLoginModal();
+                showToast("Hak akses diverifikasi. Selamat datang, Admin!", "success");
+                switchTab('rekap');
+            } else {
+                showToast("Kata sandi salah! Silakan coba lagi.", "error");
+            }
+        };
+
+        /* DELETE ACTIONS */
+        window.openDeleteConfirm = function(orderId) {
+            deleteTargetId = orderId;
+            document.getElementById('modal-delete').classList.remove('hidden');
+        };
+
+        window.closeDeleteConfirm = function() {
+            deleteTargetId = null;
+            document.getElementById('modal-delete').classList.add('hidden');
+        };
+
+        window.confirmDeleteOrder = async function() {
+            if (!deleteTargetId) return;
+            const btn = document.getElementById('btn-confirm-delete');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Menghapus...';
+
+            try {
+                if (isFirebaseActive()) {
+                    const appIdStr = "PADI_REBORN_APP_2026";
+                    await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'orders', deleteTargetId));
+                } else {
+                    let localOrders = JSON.parse(localStorage.getItem('padi_local_orders') || '[]');
+                    localOrders = localOrders.filter(o => o.id !== deleteTargetId && o.timestamp !== deleteTargetId);
+                    localStorage.setItem('padi_local_orders', JSON.stringify(localOrders));
+                    
+                    // Filter dari internal list
+                    ordersData = ordersData.filter(o => o.id !== deleteTargetId && o.timestamp !== deleteTargetId);
+                    updateRekapStats();
+                    updateRekapTable();
+                }
+                showToast("Data pemesanan lokal berhasil dihapus.", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal menghapus data.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Hapus Data';
+                closeDeleteConfirm();
+            }
+        };
+
+        /* TAB SWITCHER */
+        window.switchTab = function(tabName) {
+            const formSec = document.getElementById('section-form');
+            const rekapSec = document.getElementById('section-rekap');
+            const successSec = document.getElementById('section-success');
+            const formBtn = document.getElementById('tab-form-btn');
+            const rekapBtn = document.getElementById('tab-rekap-btn');
+
+            if (formSec) formSec.classList.add('hidden');
+            if (rekapSec) rekapSec.classList.add('hidden');
+            if (successSec) successSec.classList.add('hidden');
+
+            formBtn.className = "px-4 py-2 text-xs sm:text-sm font-bold rounded-lg text-slate-500 hover:text-slate-900 transition-all duration-200";
+            rekapBtn.className = "hidden px-4 py-2 text-xs sm:text-sm font-bold rounded-lg text-slate-500 hover:text-slate-900 transition-all duration-200";
+            if (isAdminLoggedIn) {
+                rekapBtn.classList.remove('hidden');
+            }
+
+            if (tabName === 'form') {
+                formSec.classList.remove('hidden');
+                formBtn.className = "px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 bg-gradient-to-r from-gold-500 to-amber-500 text-slate-950 shadow-md";
+            } else if (tabName === 'rekap') {
+                if (!isAdminLoggedIn) {
+                    showToast("Harap lakukan verifikasi login admin terlebih dahulu!", "error");
+                    openAdminLoginModal();
+                    return;
+                }
+                rekapSec.classList.remove('hidden');
+                rekapBtn.className = "px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 bg-gradient-to-r from-gold-500 to-amber-500 text-slate-950 shadow-md";
+                
+                // Sinkronkan data real-time silang dari Sheets saat tab Rekap dibuka
+                loadOrdersData();
+            } else if (tabName === 'success') {
+                if (successSec) successSec.classList.remove('hidden');
+            }
+        };
+
+        window.onload = async function() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('payment_date');
+            if (dateInput) dateInput.value = today;
+
+            startCountdown();
+            await authenticate();
+            
+            // Dengarkan atau muat data otomatis pertama kali
+            startListeningToOrders();
+        };
+    </script>
+</body>
+</html>
